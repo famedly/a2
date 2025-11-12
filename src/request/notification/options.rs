@@ -8,7 +8,8 @@ pub struct CollapseId {
 
 /// A collapse-id container. Will not allow bigger id's than 64 bytes.
 impl CollapseId {
-    pub fn new(value: String) -> Result<CollapseId, Error> {
+    pub fn new(value: impl Into<String>) -> Result<CollapseId, Error> {
+        let value = value.into();
         if value.len() > 64 {
             Err(Error::InvalidOptions(String::from(
                 "The collapse-id is too big. Maximum 64 bytes.",

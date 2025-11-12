@@ -181,8 +181,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_title(mut self, title: String) -> Self {
-        self.alert.title = Some(title);
+    pub fn set_title(mut self, title: impl Into<String>) -> Self {
+        self.alert.title = Some(title.into());
         self.has_edited_alert = true;
         self
     }
@@ -232,8 +232,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_subtitle(mut self, subtitle: String) -> Self {
-        self.alert.subtitle = Some(subtitle);
+    pub fn set_subtitle(mut self, subtitle: impl Into<String>) -> Self {
+        self.alert.subtitle = Some(subtitle.into());
         self.has_edited_alert = true;
         self
     }
@@ -254,8 +254,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_body(mut self, body: String) -> Self {
-        self.alert.body = Some(body);
+    pub fn set_body(mut self, body: impl Into<String>) -> Self {
+        self.alert.body = Some(body.into());
         self
     }
 
@@ -297,8 +297,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_sound(mut self, sound: String) -> Self {
-        self.sound.name = Some(sound);
+    pub fn set_sound(mut self, sound: impl Into<String>) -> Self {
+        self.sound.name = Some(sound.into());
         self
     }
 
@@ -320,8 +320,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_category(mut self, category: String) -> Self {
-        self.category = Some(category);
+    pub fn set_category(mut self, category: impl Into<String>) -> Self {
+        self.category = Some(category.into());
         self
     }
 
@@ -342,8 +342,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_title_loc_key(mut self, key: String) -> Self {
-        self.alert.title_loc_key = Some(key);
+    pub fn set_title_loc_key(mut self, key: impl Into<String>) -> Self {
+        self.alert.title_loc_key = Some(key.into());
         self.has_edited_alert = true;
         self
     }
@@ -393,8 +393,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_action_loc_key(mut self, key: String) -> Self {
-        self.alert.action_loc_key = Some(key);
+    pub fn set_action_loc_key(mut self, key: impl Into<String>) -> Self {
+        self.alert.action_loc_key = Some(key.into());
         self.has_edited_alert = true;
         self
     }
@@ -416,8 +416,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_loc_key(mut self, key: String) -> Self {
-        self.alert.loc_key = Some(key);
+    pub fn set_loc_key(mut self, key: impl Into<String>) -> Self {
+        self.alert.loc_key = Some(key.into());
         self.has_edited_alert = true;
         self
     }
@@ -468,8 +468,8 @@ impl DefaultNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_launch_image(mut self, image: String) -> Self {
-        self.alert.launch_image = Some(image);
+    pub fn set_launch_image(mut self, image: impl Into<String>) -> Self {
+        self.alert.launch_image = Some(image.into());
         self.has_edited_alert = true;
         self
     }
@@ -520,7 +520,7 @@ impl DefaultNotificationBuilder {
 }
 
 impl NotificationBuilder for DefaultNotificationBuilder {
-    fn build(self, device_token: String, options: NotificationOptions) -> Payload {
+    fn build(self, device_token: impl Into<String>, options: NotificationOptions) -> Payload {
         Payload {
             aps: APS {
                 alert: match self.has_edited_alert {
@@ -538,7 +538,7 @@ impl NotificationBuilder for DefaultNotificationBuilder {
                 mutable_content: Some(self.mutable_content),
                 url_args: None,
             },
-            device_token,
+            device_token: device_token.into(),
             options,
             data: BTreeMap::new(),
         }

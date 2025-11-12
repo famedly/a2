@@ -149,8 +149,8 @@ impl Payload {
     /// );
     /// }
     /// ```
-    pub fn add_custom_data(&mut self, root_key: String, data: &dyn Serialize) -> Result<&mut Self, Error> {
-        self.data.insert(root_key, serde_json::to_value(data)?);
+    pub fn add_custom_data(&mut self, root_key: impl Into<String>, data: &dyn Serialize) -> Result<&mut Self, Error> {
+        self.data.insert(root_key.into(), serde_json::to_value(data)?);
 
         Ok(self)
     }

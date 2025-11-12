@@ -70,14 +70,14 @@ impl WebNotificationBuilder {
     /// );
     /// # }
     /// ```
-    pub fn set_sound(&mut self, sound: String) -> &mut Self {
-        self.sound = Some(sound);
+    pub fn set_sound(&mut self, sound: impl Into<String>) -> &mut Self {
+        self.sound = Some(sound.into());
         self
     }
 }
 
 impl NotificationBuilder for WebNotificationBuilder {
-    fn build(self, device_token: String, options: NotificationOptions) -> Payload {
+    fn build(self, device_token: impl Into<String>, options: NotificationOptions) -> Payload {
         Payload {
             aps: APS {
                 alert: Some(APSAlert::WebPush(self.alert)),
@@ -88,7 +88,7 @@ impl NotificationBuilder for WebNotificationBuilder {
                 mutable_content: None,
                 url_args: Some(self.url_args),
             },
-            device_token,
+            device_token: device_token.into(),
             options,
             data: BTreeMap::new(),
         }
