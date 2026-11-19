@@ -16,8 +16,11 @@ use hyper_rustls::{ConfigBuilderExt, HttpsConnector, HttpsConnectorBuilder};
 use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::client::legacy::Client as HttpClient;
 use hyper_util::rt::TokioExecutor;
+use rustls::pki_types::pem::PemObject;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use std::convert::Infallible;
 use std::io::Read;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{fmt, io};
 
@@ -301,28 +304,33 @@ impl Client {
     }
 }
 
+/// TLS config builder with the ring provider set explicitly, so it does not depend on which rustls
+/// crypto provider the rest of the dependency tree enables.
+fn tls_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::WantsVerifier> {
+    rustls::ClientConfig::builder_with_provider(Arc::new(rustls::crypto::ring::default_provider()))
+        .with_safe_default_protocol_versions()
+        .expect("ring supports the default TLS versions")
+}
+
 fn default_connector() -> HyperConnector {
     HttpsConnectorBuilder::new()
-        .with_webpki_roots()
+        .with_tls_config(tls_config_builder().with_webpki_roots().with_no_client_auth())
         .https_only()
         .enable_http2()
         .build()
 }
 
-fn client_cert_connector(mut cert_pem: &[u8], mut key_pem: &[u8]) -> Result<HyperConnector, Error> {
+fn client_cert_connector(cert_pem: &[u8], key_pem: &[u8]) -> Result<HyperConnector, Error> {
     let private_key_error = || io::Error::new(io::ErrorKind::InvalidData, "private key");
 
-    let key = rustls_pemfile::pkcs8_private_keys(&mut key_pem)
-        .next()
-        .ok_or_else(private_key_error)?
-        .map_err(|_| private_key_error())?;
+    let key = PrivateKeyDer::from_pem_slice(key_pem).map_err(|_| private_key_error())?;
 
-    let cert_chain: Result<Vec<_>, _> = rustls_pemfile::certs(&mut cert_pem).collect();
+    let cert_chain: Result<Vec<_>, _> = CertificateDer::pem_slice_iter(cert_pem).collect();
     let cert_chain = cert_chain.map_err(|_| private_key_error())?;
 
-    let config = rustls::client::ClientConfig::builder()
+    let config = tls_config_builder()
         .with_webpki_roots()
-        .with_client_auth_cert(cert_chain, key.into())?;
+        .with_client_auth_cert(cert_chain, key)?;
 
     Ok(HttpsConnectorBuilder::new()
         .with_tls_config(config)
